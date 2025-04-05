@@ -3,19 +3,18 @@ package com.email.writer.controller;
 import com.email.writer.model.EmailRequest;
 import com.email.writer.service.EmailGeneratorService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/email")
-@AllArgsConstructor
+@CrossOrigin(origins = "*")
+//@AllArgsConstructor
 public class EmailGenerator {
 
-//    @Autowired
-    private final EmailGeneratorService emailGeneratorService;
+    @Autowired
+    public EmailGeneratorService emailGeneratorService;
 
 
     @PostMapping("/generate")
