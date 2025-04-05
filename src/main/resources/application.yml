@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: smart-email-writer
+
+gemini:
+  api:
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=
+    key: AIzaSyBoI2Fq9TW5KRXmarIhw8XxZY3sKQSeaZc
+
+server:
+  port: 8081
