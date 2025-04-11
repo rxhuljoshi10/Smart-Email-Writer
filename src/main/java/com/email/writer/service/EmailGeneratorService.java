@@ -35,8 +35,7 @@ public class EmailGeneratorService {
         );
 
         String response = webClient.post()
-//                .uri(GEMINI_URL + GEMINI_KEY)
-                .uri("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBoI2Fq9TW5kRXmarIhw8XxZY3sKQSeaZc")
+                .uri(GEMINI_URL + GEMINI_KEY)
                 .header("Content-Type", "application/json")
                 .bodyValue(requestBody)
                 .retrieve()
@@ -59,13 +58,13 @@ public class EmailGeneratorService {
                     .asText();
 
         }catch (Exception e){
-            return "Errorrrrr : " + e.getMessage();
+            return e.getMessage();
         }
     }
 
     private String buildPrompt(EmailRequest emailRequest) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Reply professionally to this email without subject line, just directly reply content.");
+        prompt.append("Reply to following email query without any subject line, directly without any extra explanations");
         if(emailRequest.getTone() != null && !emailRequest.getTone().isEmpty()){
             prompt.append("Use ").append(emailRequest.getTone()).append(" tone");
         }
