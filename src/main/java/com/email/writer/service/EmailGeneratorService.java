@@ -64,7 +64,11 @@ public class EmailGeneratorService {
 
     private String buildPrompt(EmailRequest emailRequest) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Reply to following email query without any subject line, directly without any extra explanations");
+        String emailLength = emailRequest.getLength();
+        if(emailLength != null && !emailLength.isEmpty()){
+            emailLength = "in "+emailLength;
+        }
+        prompt.append("Reply to following email query "+emailLength+" without any subject line or explanation.");
         if(emailRequest.getTone() != null && !emailRequest.getTone().isEmpty()){
             prompt.append("Use ").append(emailRequest.getTone()).append(" tone");
         }
