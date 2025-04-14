@@ -4,7 +4,6 @@ import { Box, Button, AppBar, Toolbar, CircularProgress, FormControl, InputLabel
 import axios from 'axios';
 
 
-
 function App() {
   const[emailContent, setEmailContent] = useState("");
   const[tone, setTone] = useState("");
@@ -14,47 +13,49 @@ function App() {
   const[modifyLoading, setModifyLoading] = useState(false);
   const[error, setError] = useState("");
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
-    try{
-      const response = await axios.post("http://localhost:8081/api/email/generate",
-        {
-          emailContent,
-          tone,
-          length
-        });
-      setGeneratedReply(typeof response.data === 'string' ? response.data :  JSON.stringify(response.data));
-    }
-    catch(error){
-      setError("Failed to generate email reply. Please try again!")
-      console.error(error)
-    }
-    finally{
-      setLoading(false);
-    }
-  }
 
-  const handleMoreButton = async() => {
-    setModifyLoading(true);
+  const handleRequest = async ({ url, payload, setLoadingState }) => {
+    setLoadingState(true);
     setError("");
-    try{
-      const response = await axios.post("http://localhost:8081/api/email/modify-generated-reply",
-        {
-          generatedReply,
-          modification: "Increase"
-        }
+  
+    try {
+      const response = await axios.post(url, payload);
+      setGeneratedReply(
+        typeof response.data === "string"
+          ? response.data
+          : JSON.stringify(response.data)
       );
-      setGeneratedReply(typeof response.data === 'string' ? response.data :  JSON.stringify(response.data));
+    } catch (error) {
+      setError("Failed to generate email reply. Please try again!");
+      console.error(error);
+    } finally {
+      setLoadingState(false);
     }
-    catch(error){
-      setError("Failed to generate email reply. Please try again!")
-      console.error(error)
-    }
-    finally{
-      setModifyLoading(false);
-    }
-  }
+  };
+  
+  const handleSubmit = () => {
+    handleRequest({
+      url: "http://localhost:8081/api/email/generate",
+      payload: {
+        emailContent,
+        tone,
+        length,
+      },
+      setLoadingState: setLoading,
+    });
+  };
+  
+  const handleModification = (modificationType) => {
+    handleRequest({
+      url: "http://localhost:8081/api/email/modify-generated-reply",
+      payload: {
+        generatedReply,
+        modification: modificationType,
+      },
+      setLoadingState: setModifyLoading,
+    });
+  };
+  
 
   return (
     
@@ -158,19 +159,26 @@ function App() {
             )}
           </Box>
 
+          {generatedReply && ( 
+          <Box sx={{mt: 2}}>
+            <Button variant='outlined' sx={{mr: 3}}
+              onClick={() => handleModification("Expand")}
+              disabled={modifyLoading} >
+                Expand!
+            </Button>
 
-          <Button variant='outlined' sx={{mt: 2, mr: 3}}
-            onClick={handleMoreButton}
-            disabled={modifyLoading}
-            >
-              {/* {modifyLoading ? <CircularProgress size={24}/> : "Add More Content!"} */}
-              Add More Content!
-          </Button>
+            <Button variant='outlined' sx={{mr: 3}}
+              onClick={() => handleModification("Shorten")}
+              disabled={modifyLoading} >
+                Shorten!
+            </Button>
 
-          <Button variant='outlined' sx={{mt: 2}}
-            onClick={() => navigator.clipboard.writeText(generatedReply)}>
-            Copy to Clipboard
-          </Button>
+            <Button variant='outlined'
+              onClick={() => navigator.clipboard.writeText(generatedReply)}>
+              Copy to Clipboard
+            </Button>
+          </Box>
+          )}
         </Box>
       )}
     </Container>
