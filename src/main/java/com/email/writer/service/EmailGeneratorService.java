@@ -1,6 +1,7 @@
 package com.email.writer.service;
 
 import com.email.writer.model.EmailRequest;
+import com.email.writer.model.ModifyEmailRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +26,11 @@ public class EmailGeneratorService {
 
     public String generateEmailReply(EmailRequest emailRequest){
         String prompt = buildPrompt(emailRequest);
+        String response = getAiResponse(prompt);
+        return response;
+    }
 
+    private String getAiResponse(String prompt) {
         Map<String, Object> requestBody = Map.of(
                 "contents", new Object[]{
                         Map.of("parts", new Object[] {
@@ -74,5 +79,12 @@ public class EmailGeneratorService {
         }
         prompt.append("\nOriginal email : \n").append(emailRequest.getEmailContent());
         return prompt.toString();
+    }
+
+    public String modifyReply(ModifyEmailRequest modifyEmailRequest) {
+        String prompt = "Given email reply by you : \n'" +
+                modifyEmailRequest.getGeneratedReply() +
+                ".' \n" + modifyEmailRequest.getModification() + " the content of this without any subject line or explanation";
+        return getAiResponse(prompt);
     }
 }
