@@ -4,12 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-
-/Backend/target/
-/Frontend/node_modules/
-/frontend/build/
-.env
-
 ### STS ###
 .apt_generated
 .classpath
