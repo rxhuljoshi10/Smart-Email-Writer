@@ -12,19 +12,27 @@ function App() {
   const[loading, setLoading] = useState(false);
   const[modifyLoading, setModifyLoading] = useState(false);
   const[error, setError] = useState("");
+  const [replyHistory, setReplyHistory] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(-1);
 
 
-  const handleRequest = async ({ url, payload, setLoadingState }) => {
+
+  const handleRequest = async ({ url, payload, setLoadingState, updateHistory = true }) => {
     setLoadingState(true);
     setError("");
   
     try {
       const response = await axios.post(url, payload);
-      setGeneratedReply(
-        typeof response.data === "string"
-          ? response.data
-          : JSON.stringify(response.data)
-      );
+      const newReply = typeof response.data === "string" ? response.data : JSON.stringify(response.data);
+      setGeneratedReply(newReply);
+  
+      if (updateHistory) {
+        setReplyHistory(prev => {
+          const newHistory = [...prev, newReply];
+          setCurrentIndex(newHistory.length - 1);
+          return newHistory;
+        });
+      }
     } catch (error) {
       setError("Failed to generate email reply. Please try again!");
       console.error(error);
@@ -34,6 +42,9 @@ function App() {
   };
   
   const handleSubmit = () => {
+    setReplyHistory([]);
+    setCurrentIndex(-1);
+    
     handleRequest({
       url: "http://localhost:8081/api/email/generate",
       payload: {
@@ -56,23 +67,37 @@ function App() {
     });
   };
   
-
+  const handleRightArrow = () => {
+    if (currentIndex < replyHistory.length - 1) {
+      const newIndex = currentIndex + 1;
+      setGeneratedReply(replyHistory[newIndex]);
+      setCurrentIndex(newIndex);
+    } else {
+      handleRequest({
+        url: "http://localhost:8081/api/email/generate",
+        payload: {
+          emailContent,
+          tone,
+          length,
+        },
+        setLoadingState: setModifyLoading,
+        updateHistory: true,
+      });
+    }
+  };
+  
+  const handleLeftArrow = () => {
+    if (currentIndex > 0) {
+      const newIndex = currentIndex - 1;
+      setGeneratedReply(replyHistory[newIndex]);
+      setCurrentIndex(newIndex);
+    }
+  };
+  
+  
   return (
     
     <Container maxWidth="md" sx={{py:4}}>
-      {/* <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar variant="dense">
-          <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" color="inherit" component="div">
-            Photos
-          </Typography>
-        </Toolbar>
-      </AppBar>
-    </Box>
-       */}
       <Typography variant='h3' component="h1" gutterBottom textAlign={'center'}>
         Smart Email Reply Generator
       </Typography>
@@ -136,17 +161,26 @@ function App() {
           </Typography>
 
           <Box sx={{ position: 'relative', width: '100%' }}>
-          <TextField
-            fullWidth
-            multiline
-            rows={6}
-            variant='outlined'
-            value={generatedReply || ""}
-            onChange={(e) => setGeneratedReply(e.target.value)}
-            inputProps={{"aria-readonly": true}}
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Button onClick={handleLeftArrow} disabled={currentIndex <= 0} sx={{ minWidth: '40px' }}>
+                ⬅️
+              </Button>
 
-          {modifyLoading && (
+              <TextField
+                fullWidth
+                multiline
+                rows={6}
+                variant='outlined'
+                value={generatedReply || ""}
+                onChange={(e) => setGeneratedReply(e.target.value)}
+                inputProps={{ "aria-readonly": true }}
+              />
+
+              <Button onClick={handleRightArrow} disabled={loading} sx={{ minWidth: '40px' }}>
+                ➡️
+              </Button>
+
+              {modifyLoading && (
               <CircularProgress
                 size={20}
                 sx={{
@@ -155,8 +189,8 @@ function App() {
                   right: 12,
                   zIndex: 1,
                 }}
-              />
-            )}
+              />)}
+            </Box>
           </Box>
 
           {generatedReply && ( 
