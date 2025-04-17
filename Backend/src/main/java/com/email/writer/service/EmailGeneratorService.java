@@ -1,7 +1,7 @@
-package com.email.writer.service;
+package com.email.writer.Service;
 
-import com.email.writer.model.EmailRequest;
-import com.email.writer.model.ModifyEmailRequest;
+import com.email.writer.Entity.EmailRequest;
+import com.email.writer.Entity.ModifyEmailRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,22 +69,25 @@ public class EmailGeneratorService {
 
     private String buildPrompt(EmailRequest emailRequest) {
         StringBuilder prompt = new StringBuilder();
-        String emailLength = emailRequest.getLength();
-        if(emailLength != null && !emailLength.isEmpty()){
-            emailLength = "in "+emailLength;
-        }
-        prompt.append("Reply to following email query "+emailLength+" without any subject line or explanation.");
-        if(emailRequest.getTone() != null && !emailRequest.getTone().isEmpty()){
-            prompt.append("Use ").append(emailRequest.getTone()).append(" tone");
-        }
-        prompt.append("\nOriginal email : \n").append(emailRequest.getEmailContent());
+//        String emailLength = emailRequest.getLength();
+//        if(emailLength != null && !emailLength.isEmpty()){
+//            emailLength = "in "+emailLength;
+//        }
+        prompt.append("Reply to following email query without any subject line or explanation.");
+        prompt.append("Here's some reply specification, ignore if empty");
+        prompt.append("\nTone : ").append(emailRequest.getTone());
+        prompt.append("\nIntent : ").append(emailRequest.getIntent());
+        prompt.append("\nLines : ").append(emailRequest.getLength());
+        prompt.append("\nFormat : ").append(emailRequest.getFormat());
+        prompt.append("\nCustom Keywords : ").append(emailRequest.getCustomKeywords());
+        prompt.append("\nOriginal email : ").append(emailRequest.getEmailContent());
+
         return prompt.toString();
     }
 
     public String modifyReply(ModifyEmailRequest modifyEmailRequest) {
-        String prompt = "Given email reply by you : \n'" +
-                modifyEmailRequest.getGeneratedReply() +
-                ".' \n" + modifyEmailRequest.getModification() + " the content of this without any subject line or explanation";
+        String prompt = modifyEmailRequest.getModification() + " the following email reply. Return only the reply without subject or any extra text. Keep the tone same : \n'" +
+                modifyEmailRequest.getGeneratedReply();
         return getAiResponse(prompt);
     }
 }

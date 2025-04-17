@@ -8,12 +8,15 @@ function App() {
   const[emailContent, setEmailContent] = useState("");
   const[tone, setTone] = useState("");
   const[length, setLength] = useState("");
+  const[intent, setIntent] = useState("");
   const[generatedReply, setGeneratedReply] = useState("");
   const[loading, setLoading] = useState(false);
   const[modifyLoading, setModifyLoading] = useState(false);
   const[error, setError] = useState("");
   const [replyHistory, setReplyHistory] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
+  const [customKeywords, setCustomKeywords] = useState("");
+  const [format, setFormat] = useState("");
 
 
 
@@ -51,6 +54,9 @@ function App() {
         emailContent,
         tone,
         length,
+        intent,
+        format,
+        customKeywords
       },
       setLoadingState: setLoading,
     });
@@ -113,7 +119,9 @@ function App() {
           onChange={(e) => setEmailContent(e.target.value)}
           sx={{mb:2}}
         />
-        <FormControl sx={{mb: 2, mr:2, width: '300px'}}>
+
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+        <FormControl sx={{mb: 2, mr:2, width: '250px'}}>
           <InputLabel>Tone (Optional)</InputLabel>
           <Select
             value={tone || ''}
@@ -126,7 +134,7 @@ function App() {
           </Select>
         </FormControl>
 
-        <FormControl sx={{mb: 2, width: '300px'}}>
+        <FormControl sx={{mb: 2, mr:2, width: '250px'}}>
           <InputLabel>Length</InputLabel>
           <Select
             value={length || ''}
@@ -138,6 +146,45 @@ function App() {
               <MenuItem value="5-7 line">Long (5-7 line)</MenuItem>
           </Select>
         </FormControl>
+
+        <FormControl sx={{mb: 2, width: '250px'}}>
+          <InputLabel>Intent</InputLabel>
+          <Select
+            value={intent || ''}
+            label={"Intent"}
+            onChange={(e) => setIntent(e.target.value)}>
+              <MenuItem value="">None</MenuItem>
+              <MenuItem value="confirm">Confirming</MenuItem>
+              <MenuItem value="decline">Declining</MenuItem>
+              <MenuItem value="agree">Agreeing</MenuItem>
+              <MenuItem value="clarification">Asking for Clarification</MenuItem>
+              <MenuItem value="update">Giving an Update</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl sx={{mb: 2, width: '250px'}}>
+          <InputLabel>Format</InputLabel>
+          <Select
+            value={format || ''}
+            label={"Format"}
+            onChange={(e) => setFormat(e.target.value)}>
+              <MenuItem value="">None</MenuItem>
+              <MenuItem value="paragraph">Paragraph</MenuItem>
+              <MenuItem value="bullets">Bullet Points</MenuItem>
+              <MenuItem value="template">Full Email Template</MenuItem>
+          </Select>
+        </FormControl>
+
+        <TextField
+          label="Preferred Keywords (Optional)"
+          variant="outlined"
+          fullWidth
+          value={customKeywords}
+          onChange={(e) => setCustomKeywords(e.target.value)}
+          helperText="Separate keywords by commas"
+        />
+
+        </Box>
     
         <Button
           variant='contained'
@@ -160,8 +207,8 @@ function App() {
             Generated Reply
           </Typography>
 
-          <Box sx={{ position: 'relative', width: '100%' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {/* <Box sx={{ position: 'relative', width: '100%' }}> */}
+            <Box sx={{ display: 'flex', alignItems: 'center' , position: 'relative'}}>
               <Button onClick={handleLeftArrow} disabled={currentIndex <= 0} sx={{ minWidth: '40px' }}>
                 ⬅️
               </Button>
@@ -185,13 +232,13 @@ function App() {
                 size={20}
                 sx={{
                   position: 'absolute',
-                  top: 12,
-                  right: 12,
-                  zIndex: 1,
+                  top: 14,
+                  right: 50,
+                  // zIndex: 1,
                 }}
               />)}
             </Box>
-          </Box>
+          
 
           {generatedReply && ( 
           <Box sx={{mt: 2}}>

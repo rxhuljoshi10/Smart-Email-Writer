@@ -1,4 +1,4 @@
-package com.email.writer.model;
+package com.email.writer.Entity;
 
 public class ModifyEmailRequest {
     private String generatedReply;
