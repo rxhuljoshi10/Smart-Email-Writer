@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Container from '@mui/material/Container';
-import { Box, Button,CircularProgress, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Box, Button,CircularProgress, FormControl, InputLabel, MenuItem, Select, TextareaAutosize, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import Slider from '@mui/material/Slider';
 import Card from '@mui/material/Card';
@@ -8,8 +8,9 @@ import LabeledTextarea from './components/LabeledTextArea.jsx';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useMemo } from 'react'
-import { createTheme, ThemeProvider, CssBaseline, IconButton} from '@mui/material'
+import { createTheme, ThemeProvider, CssBaseline, IconButton, InputAdornment} from '@mui/material'
 import { Brightness4, Brightness7 } from '@mui/icons-material'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
   const [generatedSubject, setGeneratedSubject] = useState("");
   const [loading, setLoading] = useState(false);
   const [modifyLoading, setModifyLoading] = useState(false);
+  const [subjectLoading, setSubjectLoading] = useState(false);
   const [error, setError] = useState("");
   const [replyHistory, setReplyHistory] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
@@ -28,6 +30,14 @@ function App() {
   const [format, setFormat] = useState("");
   const [tabIndex, setTabIndex] = useState('one');
   const [mode, setMode] = useState('light')
+
+
+  const MAX = 15;
+  const MIN = 1;
+  const marks = [
+    { value: MIN, label: '' },
+    { value: MAX, label: '' },
+  ];
 
 
   const theme = useMemo(
@@ -42,14 +52,6 @@ function App() {
     setMode(prev => (prev === 'light' ? 'dark' : 'light'))
   }
 
-  const MAX = 15;
-  const MIN = 1;
-  const marks = [
-    { value: MIN, label: '' },
-    { value: MAX, label: '' },
-  ];
-
-
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
   };
@@ -60,12 +62,21 @@ function App() {
   
     try {
       const response = await axios.post(url, payload);
-      const newReply = typeof response.data === "string" ? response.data : JSON.stringify(response.data);
-      setGeneratedReply(newReply);
+      const reply = typeof response.data === "string" ? response.data : JSON.stringify(response.data);
+
+      const subjectMatch = reply.match(/^Subject:\s*(.*)/);
+      const bodyMatch = reply.split('\n').slice(1).join('\n').trim();
+
+      if (subjectMatch) {
+        const extractedSubject = subjectMatch[1].trim();
+        setGeneratedSubject(extractedSubject);
+      }
+
+      setGeneratedReply(bodyMatch);
   
       if (updateHistory) {
         setReplyHistory(prev => {
-          const newHistory = [...prev, newReply];
+          const newHistory = [...prev, bodyMatch];
           setCurrentIndex(newHistory.length - 1);
           return newHistory;
         });
@@ -79,6 +90,21 @@ function App() {
     }
   };
   
+  const handleSubject = () => {
+    handleRequest({
+      url: "http://localhost:8081/api/email/generate",
+      payload: {
+        emailContent,
+        tone,
+        length : replyLength,
+        intent,
+        format,
+        customKeywords
+      },
+      setLoadingState: setLoading,
+    });
+  };
+
   const handleSubmit = () => {
     setReplyHistory([]);
     setCurrentIndex(-1);
@@ -88,7 +114,7 @@ function App() {
       payload: {
         emailContent,
         tone,
-        length : replyLength,
+        length : "",
         intent,
         format,
         customKeywords
@@ -334,13 +360,45 @@ function App() {
             Generated Reply:
           </Typography>
 
-          <LabeledTextarea
-            label="Subject"
-            placeholder=""
-            value={generatedSubject}
-            onChange={(e) => setGeneratedSubject(e.target.value)}
-            minRows={1}
-          />
+          
+          <Typography variant="subtitle1" sx={{fontSize:18, mb: 1 }}>
+            Subject
+          </Typography>
+
+          <Box sx={{display: 'flex', gap:1, alignItems: 'center', mb:4}}>
+            <TextareaAutosize
+              placeholder='Email Subject...'  
+              value={generatedSubject}
+              onChange={(e) => setGeneratedSubject(e.target.value)}
+              minRows={1}
+              style={{
+                alignContent:'center',
+                width: '100%',
+                height: '40px',
+                padding: '7px',
+                fontSize: '18px',
+                borderRadius: '8px',
+                border: `2px solid ${theme.palette.divider}`,
+                fontFamily: 'inherit',
+                resize: 'vertical',
+                boxSizing: 'border-box',
+                backgroundColor: theme.palette.mode === 'dark'
+                ? theme.palette.grey[900]
+                : theme.palette.grey[10],
+                color: theme.palette.text.primary
+              }}
+            />
+            <IconButton onClick={() => navigator.clipboard.writeText(generatedSubject)}>
+              <ContentCopyIcon />
+            </IconButton>
+            {/* <Button
+              variant='contained'
+              disabled={!generatedReply || subjectLoading}
+              sx={{height: '53px', borderRadius:'8px', fontSize:'18px'}}>
+              
+              Generate
+            </Button> */}
+          </Box>
 
           <LabeledTextarea
             label="Body"
