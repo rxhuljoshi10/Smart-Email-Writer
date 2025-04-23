@@ -1,16 +1,19 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
+import { styled, useTheme } from '@mui/material/styles'
 
-const LabeledTextarea = ({ label, value, onChange, placeholder}) => {
+const LabeledTextarea = ({ label, labelBoldness=500, value, onChange, placeholder, minRows=5}) => {
+  const theme = useTheme()
+
   return (
     <Box sx={{ width: '100%', mb: 2 }}>
-      <Typography variant="subtitle1" sx={{fontSize:18, fontWeight: 'bold', mb: 1 }}>
+      <Typography variant="subtitle1" sx={{fontSize:18, fontWeight: labelBoldness, mb: 1 }}>
         {label}
       </Typography>
 
       <TextareaAutosize
-        minRows={5}
+        minRows={minRows}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
@@ -19,10 +22,14 @@ const LabeledTextarea = ({ label, value, onChange, placeholder}) => {
           padding: '12px',
           fontSize: '18px',
           borderRadius: '8px',
-          border: '1px solid #ccc',
+          border: `2px solid ${theme.palette.divider}`,
           fontFamily: 'inherit',
           resize: 'vertical',
           boxSizing: 'border-box',
+          backgroundColor: theme.palette.mode === 'dark'
+          ? theme.palette.grey[900]
+          : theme.palette.grey[10],
+          color: theme.palette.text.primary
         }}
       />
     </Box>

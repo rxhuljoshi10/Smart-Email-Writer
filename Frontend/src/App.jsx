@@ -5,10 +5,11 @@ import axios from 'axios';
 import Slider from '@mui/material/Slider';
 import Card from '@mui/material/Card';
 import LabeledTextarea from './components/LabeledTextArea.jsx';
-import Tabs from '@mui/joy/Tabs';
-import TabList from '@mui/joy/TabList';
-import Tab from '@mui/joy/Tab';
-import Stack from '@mui/joy/Stack';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { useMemo } from 'react'
+import { createTheme, ThemeProvider, CssBaseline, IconButton} from '@mui/material'
+import { Brightness4, Brightness7 } from '@mui/icons-material'
 
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
   const [replyLength, setReplyLength] = useState(3);
   const [intent, setIntent] = useState("");
   const [generatedReply, setGeneratedReply] = useState("");
+  const [generatedSubject, setGeneratedSubject] = useState("");
   const [loading, setLoading] = useState(false);
   const [modifyLoading, setModifyLoading] = useState(false);
   const [error, setError] = useState("");
@@ -24,8 +26,21 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [customKeywords, setCustomKeywords] = useState("");
   const [format, setFormat] = useState("");
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState('one');
+  const [mode, setMode] = useState('light')
 
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: { mode },
+      }),
+    [mode]
+  )
+
+  const toggleDarkMode = () => {
+    setMode(prev => (prev === 'light' ? 'dark' : 'light'))
+  }
 
   const MAX = 15;
   const MIN = 1;
@@ -34,6 +49,10 @@ function App() {
     { value: MAX, label: '' },
   ];
 
+
+  const handleTabChange = (event, newValue) => {
+    setTabIndex(newValue);
+  };
 
   const handleRequest = async ({ url, payload, setLoadingState, updateHistory = true }) => {
     setLoadingState(true);
@@ -51,7 +70,7 @@ function App() {
           return newHistory;
         });
       }
-      setTabIndex(1);
+      setTabIndex("two");
     } catch (error) {
       setError("Failed to generate email reply. Please try again!");
       console.error(error);
@@ -118,13 +137,27 @@ function App() {
 
   
   return (
-    <>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 16,
+          right: 16,
+          zIndex: theme.zIndex.drawer + 1,
+        }}
+      >
+        <IconButton onClick={toggleDarkMode} color="inherit">
+          {mode === 'light' ? <Brightness4 /> : <Brightness7 />}
+        </IconButton>
+      </Box>
+
     <Box sx={{ py: 3, borderRadius: 2, my: 2 }}>
       <Typography 
         variant='h2' 
         component="h1" 
         textAlign='center' 
-        color="#000000"
+        color="textPrimary"
         sx={{ fontWeight: 'bold', fontFamily: 'serif' }}>
         Smart Email Reply Generator
       </Typography>
@@ -135,27 +168,22 @@ function App() {
 
     <Container sx={{width:'950px'}}>
 
-      <Stack spacing={2} 
-      sx={{
-        display: 'flex',
-        alignItems: 'center', // Center on Y-axis (optional)
-        
-      }}>
-        
+      <Box sx={{ width: '100%' }}>
         <Tabs
-          aria-label="Email Tabs"
           value={tabIndex}
-          onChange={(event, newValue) => setTabIndex(newValue)}
+          onChange={handleTabChange}
+          textColor="secondary"
+          indicatorColor="secondary"
+          aria-label="secondary tabs example"
         >
-          <TabList>
-            <Tab indicatorInset> Email Content </Tab>
-            <Tab indicatorInset> Generated Reply </Tab>
-          </TabList>
+          <Tab value="one" label="Email Details" />
+          <Tab value="two" label="Generated Reply" />
+        
         </Tabs>
-      </Stack>
+      </Box>
 
       <Box sx={{my: 4}}>
-        {tabIndex === 0 && (
+        {tabIndex === "one" && (
         <Card 
           sx={{
             boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.1)', // soft shadow
@@ -170,12 +198,13 @@ function App() {
 
           <LabeledTextarea
             label="Email Content"
+            labelBoldness={600}
             placeholder="Paste the email here to get response..."
             value={emailContent}
             onChange={(e) => setEmailContent(e.target.value)}
           />
 
-          <Typography variant="subtitle1" sx={{fontSize:16, fontWeight: '10'}}>
+          <Typography variant="subtitle1" sx={{fontSize:17, fontWeight: '10', mb: 1}}>
             Optional Fields : 
           </Typography>
 
@@ -276,7 +305,7 @@ function App() {
             onClick={handleSubmit}
             disabled={!emailContent || loading}
             fullWidth
-            sx={{height:'50px', borderRadius:3}}>
+            sx={{height:'45px', borderRadius:3}}>
             {loading ? <CircularProgress size={24}/> : "Generate Reply"}
           </Button>
           
@@ -288,7 +317,7 @@ function App() {
         </Card>
         )}
 
-        {tabIndex === 1 &&(
+        {tabIndex === "two" &&(
         <Card 
           sx={{
             boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.1)', // soft shadow
@@ -301,19 +330,31 @@ function App() {
             }
           }}>
 
+          <Typography variant="subtitle1" sx={{fontSize:25, fontWeight: 600, mb: 2 }}>
+            Generated Reply:
+          </Typography>
+
           <LabeledTextarea
-            label="Generated Reply"
+            label="Subject"
+            placeholder=""
+            value={generatedSubject}
+            onChange={(e) => setGeneratedSubject(e.target.value)}
+            minRows={1}
+          />
+
+          <LabeledTextarea
+            label="Body"
             placeholder=""
             value={generatedReply}
             onChange={(e) => setGeneratedReply(e.target.value)}
           />
 
           <Box sx={{ display: 'flex', alignItems: 'center' , position: 'relative'}}>
-            <Button onClick={handleLeftArrow} disabled={currentIndex <= 0} sx={{ minWidth: '40px' }}>
+            <Button onClick={handleLeftArrow} disabled={!generatedReply || currentIndex <= 0} sx={{ minWidth: '40px' }}>
               ⬅️
             </Button>
 
-            <Button onClick={handleRightArrow} disabled={loading} sx={{ minWidth: '40px' }}>
+            <Button onClick={handleRightArrow} disabled={!generatedReply || modifyLoading} sx={{ minWidth: '40px' }}>
               ➡️
             </Button>
 
@@ -332,18 +373,19 @@ function App() {
           <Box sx={{mt: 2}}>
             <Button variant='outlined' sx={{mr: 3}}
               onClick={() => handleModification("Expand")}
-              disabled={modifyLoading} >
+              disabled={!generatedReply || modifyLoading} >
                 Expand!
             </Button>
 
             <Button variant='outlined' sx={{mr: 3}}
               onClick={() => handleModification("Shorten")}
-              disabled={modifyLoading} >
+              disabled={!generatedReply || modifyLoading} >
                 Shorten!
             </Button>
 
             <Button variant='outlined'
-              onClick={() => navigator.clipboard.writeText(generatedReply)}>
+              onClick={() => navigator.clipboard.writeText(generatedReply)}
+              disabled={!generatedReply || modifyLoading}>
               Copy to Clipboard
             </Button>
           </Box>
@@ -352,9 +394,8 @@ function App() {
         )}
       </Box>
       
-
     </Container>
-    </>
+    </ThemeProvider>
   )
 }
 
