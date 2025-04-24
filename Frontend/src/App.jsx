@@ -16,7 +16,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 function App() {
   const [emailContent, setEmailContent] = useState("");
   const [tone, setTone] = useState("");
-  const [replyLength, setReplyLength] = useState(3);
+  const [replyLength, setReplyLength] = useState("");
   const [intent, setIntent] = useState("");
   const [generatedReply, setGeneratedReply] = useState("");
   const [generatedSubject, setGeneratedSubject] = useState("");
@@ -30,6 +30,7 @@ function App() {
   const [format, setFormat] = useState("");
   const [tabIndex, setTabIndex] = useState('one');
   const [mode, setMode] = useState('light')
+  const [language, setLanguge] = useState("english")
 
 
   const MAX = 15;
@@ -56,32 +57,13 @@ function App() {
     setTabIndex(newValue);
   };
 
-  const handleRequest = async ({ url, payload, setLoadingState, updateHistory = true }) => {
+  const handleRequest = async ({ url, payload, setLoadingState}) => {
     setLoadingState(true);
     setError("");
   
     try {
-      const response = await axios.post(url, payload);
-      const reply = typeof response.data === "string" ? response.data : JSON.stringify(response.data);
-
-      const subjectMatch = reply.match(/^Subject:\s*(.*)/);
-      const bodyMatch = reply.split('\n').slice(1).join('\n').trim();
-
-      if (subjectMatch) {
-        const extractedSubject = subjectMatch[1].trim();
-        setGeneratedSubject(extractedSubject);
-      }
-
-      setGeneratedReply(bodyMatch);
-  
-      if (updateHistory) {
-        setReplyHistory(prev => {
-          const newHistory = [...prev, bodyMatch];
-          setCurrentIndex(newHistory.length - 1);
-          return newHistory;
-        });
-      }
-      setTabIndex("two");
+      const res = await axios.post(url, payload);
+      return typeof res.data === "string" ? res.data : JSON.stringify(res.data);
     } catch (error) {
       setError("Failed to generate email reply. Please try again!");
       console.error(error);
@@ -105,26 +87,39 @@ function App() {
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setReplyHistory([]);
-    setCurrentIndex(-1);
+    setCurrentIndex(0);
     
-    handleRequest({
+    const response = await handleRequest({
       url: "http://localhost:8081/api/email/generate",
       payload: {
         emailContent,
         tone,
-        length : "",
+        length : replyLength,
         intent,
         format,
         customKeywords
       },
       setLoadingState: setLoading,
     });
+    console.log(replyLength);
+    const subjectMatch = response.match(/^Subject:\s*(.*)/);
+    const bodyMatch = response.split('\n').slice(1).join('\n').trim();
+
+    if (subjectMatch) {
+      const extractedSubject = subjectMatch[1].trim();
+      setGeneratedSubject(extractedSubject);
+    }
+
+    setGeneratedReply(bodyMatch);
+    addToReplyHistory(bodyMatch);
+    setTabIndex("two");
+
   };
   
-  const handleModification = (modificationType) => {
-    handleRequest({
+  const handleModification = async (modificationType) => {
+    const response = await handleRequest({
       url: "http://localhost:8081/api/email/modify-generated-reply",
       payload: {
         generatedReply,
@@ -132,24 +127,26 @@ function App() {
       },
       setLoadingState: setModifyLoading,
     });
+
+    setGeneratedReply(response);
+    addToReplyHistory(response);
+  };
+
+  const addToReplyHistory = (response) => {
+    setReplyHistory(prev => {
+      const newHistory = [...prev, response];
+      setCurrentIndex(newHistory.length - 1);
+      return newHistory;
+    });
   };
   
-  const handleRightArrow = () => {
+  const handleRightArrow = async () => {
     if (currentIndex < replyHistory.length - 1) {
       const newIndex = currentIndex + 1;
       setGeneratedReply(replyHistory[newIndex]);
       setCurrentIndex(newIndex);
     } else {
-      handleRequest({
-        url: "http://localhost:8081/api/email/generate",
-        payload: {
-          emailContent,
-          tone,
-          length,
-        },
-        setLoadingState: setModifyLoading,
-        updateHistory: true,
-      });
+      handleModification("Alternative");
     }
   };
   
@@ -234,12 +231,12 @@ function App() {
             Optional Fields : 
           </Typography>
 
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 4, p:2,  border: '1px solid grey' , borderRadius: '12px'}}>
-            <FormControl sx={{mb: 2, mr:2, width: '250px'}}>
-              <InputLabel>Tone (Optional)</InputLabel>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, mb: 5, p:2,  border: '1px solid grey' , borderRadius: '12px'}}>
+            <FormControl sx={{width: '250px'}}>
+              <InputLabel>Tone</InputLabel>
               <Select
                 value={tone || ''}
-                label={"Tone (Optional)"}
+                label={"Tone"}
                 onChange={(e) => setTone(e.target.value)}>
                   <MenuItem value="">None</MenuItem>
                   <MenuItem value="professional">Professional</MenuItem>
@@ -248,20 +245,7 @@ function App() {
               </Select>
             </FormControl>
 
-            {/* <FormControl sx={{mb: 2, mr:2, width: '250px'}}>
-              <InputLabel>Length</InputLabel>
-              <Select
-                value={length || ''}
-                label={"Length"}
-                onChange={(e) => setLength(e.target.value)}>
-                  <MenuItem value="">Default</MenuItem>
-                  <MenuItem value="1 line">Short (1 line)</MenuItem>
-                  <MenuItem value="2-3 line">Medium (2-3 line)</MenuItem>
-                  <MenuItem value="5-7 line">Long (5-7 line)</MenuItem>
-              </Select>
-            </FormControl> */}
-
-            <FormControl sx={{mb: 2, width: '250px'}}>
+            <FormControl sx={{ width: '250px'}}>
               <InputLabel>Intent</InputLabel>
               <Select
                 value={intent || ''}
@@ -276,7 +260,7 @@ function App() {
               </Select>
             </FormControl>
 
-            <FormControl sx={{mb: 2, width: '250px'}}>
+            <FormControl sx={{ width: '250px'}}>
               <InputLabel>Format</InputLabel>
               <Select
                 value={format || ''}
@@ -289,14 +273,24 @@ function App() {
               </Select>
             </FormControl>
 
-            <Box sx={{ width: 400 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                Length Preference
+            <TextField
+              label="Preferred Keywords"
+              variant="outlined"
+              fullWidth
+              value={customKeywords}
+              onChange={(e) => setCustomKeywords(e.target.value)}
+              helperText="Separate keywords by commas"
+            />
+
+            <Box sx={{ width: 450, ml:1}}>
+              <Typography variant="subtitle2" >
+                Length
               </Typography>
               <Slider
                 marks={marks}
                 step={1}
-                value={replyLength}
+                shiftStep={30}  
+                value={replyLength ?? MIN}
                 valueLabelDisplay="auto"
                 min={MIN}
                 max={MAX}
@@ -306,24 +300,27 @@ function App() {
                 <Typography
                   variant="body2"
                   sx={{ cursor: 'pointer' }}>
-                  {MIN} Min
+                  {MIN} Line (Min)
                 </Typography>
                 <Typography
                   variant="body2"
                   sx={{ cursor: 'pointer' }}>
-                  {MAX} Max
+                  {MAX} Line (Max)
                 </Typography>
               </Box>
             </Box>
 
-            <TextField
-              label="Preferred Keywords (Optional)"
-              variant="outlined"
-              fullWidth
-              value={customKeywords}
-              onChange={(e) => setCustomKeywords(e.target.value)}
-              helperText="Separate keywords by commas"
-            />
+            <FormControl sx={{mt: 2, width: '250px', marginLeft: 'auto'}}>
+              <InputLabel>Language</InputLabel>
+              <Select
+                value={language}
+                label={"Language"}
+                onChange={(e) => setLanguge(e.target.value)}>
+                  <MenuItem value="english">English</MenuItem>
+                  <MenuItem value="hindi">Hindi</MenuItem>
+                  <MenuItem value="marathi">Marathi</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
       
           <Button
@@ -428,20 +425,26 @@ function App() {
             />)}
           </Box>
             
-          <Box sx={{mt: 2}}>
-            <Button variant='outlined' sx={{mr: 3}}
+          <Box sx={{mt: 2, gap: 2, display: 'flex'}}>
+            <Button variant='outlined' sx={{borderRadius:'10px'}}
+              onClick={() => handleModification("Polish")}
+              disabled={!generatedReply || modifyLoading} >
+                Polish!
+            </Button>
+
+            <Button variant='outlined' sx={{borderRadius:'10px'}}
               onClick={() => handleModification("Expand")}
               disabled={!generatedReply || modifyLoading} >
                 Expand!
             </Button>
 
-            <Button variant='outlined' sx={{mr: 3}}
+            <Button variant='outlined' sx={{borderRadius:'10px'}}
               onClick={() => handleModification("Shorten")}
               disabled={!generatedReply || modifyLoading} >
                 Shorten!
             </Button>
 
-            <Button variant='outlined'
+            <Button variant='outlined' sx={{borderRadius:'10px', marginLeft: 'auto'}}
               onClick={() => navigator.clipboard.writeText(generatedReply)}
               disabled={!generatedReply || modifyLoading}>
               Copy to Clipboard
