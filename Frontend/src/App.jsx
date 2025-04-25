@@ -9,6 +9,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useMemo } from 'react'
 import { createTheme, ThemeProvider, CssBaseline, IconButton, InputAdornment} from '@mui/material'
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Brightness4, Brightness7 } from '@mui/icons-material'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
@@ -16,7 +18,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 function App() {
   const [emailContent, setEmailContent] = useState("");
   const [tone, setTone] = useState("");
-  const [replyLength, setReplyLength] = useState("");
+  const [replyLength, setReplyLength] = useState(0);
   const [intent, setIntent] = useState("");
   const [generatedReply, setGeneratedReply] = useState("");
   const [generatedSubject, setGeneratedSubject] = useState("");
@@ -34,7 +36,7 @@ function App() {
 
 
   const MAX = 15;
-  const MIN = 1;
+  const MIN = 0;
   const marks = [
     { value: MIN, label: '' },
     { value: MAX, label: '' },
@@ -96,10 +98,11 @@ function App() {
       payload: {
         emailContent,
         tone,
-        length : replyLength,
+        length : replyLength == 0 ? "" : replyLength,
         intent,
         format,
-        customKeywords
+        customKeywords,
+        language
       },
       setLoadingState: setLoading,
     });
@@ -290,7 +293,7 @@ function App() {
                 marks={marks}
                 step={1}
                 shiftStep={30}  
-                value={replyLength ?? MIN}
+                value={replyLength}
                 valueLabelDisplay="auto"
                 min={MIN}
                 max={MAX}
@@ -299,8 +302,8 @@ function App() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography
                   variant="body2"
-                  sx={{ cursor: 'pointer' }}>
-                  {MIN} Line (Min)
+                  sx={{ cursor: 'pointer' }}>   
+                  {MIN+1} Line (Min)
                 </Typography>
                 <Typography
                   variant="body2"
@@ -404,14 +407,18 @@ function App() {
             onChange={(e) => setGeneratedReply(e.target.value)}
           />
 
-          <Box sx={{ display: 'flex', alignItems: 'center' , position: 'relative'}}>
-            <Button onClick={handleLeftArrow} disabled={!generatedReply || currentIndex <= 0} sx={{ minWidth: '40px' }}>
-              ⬅️
-            </Button>
+          <Box sx={{display:'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <IconButton onClick={handleLeftArrow} disabled={!generatedReply || currentIndex <= 0}>
+              <NavigateBeforeIcon fontSize="large" />
+            </IconButton>
 
-            <Button onClick={handleRightArrow} disabled={!generatedReply || modifyLoading} sx={{ minWidth: '40px' }}>
-              ➡️
-            </Button>
+            <Typography variant="body2" sx={{ mx: 2 }}>
+              Reply {currentIndex + 1} of {replyHistory.length}
+            </Typography>
+
+            <IconButton onClick={handleRightArrow} disabled={!generatedReply || modifyLoading}>
+              <NavigateNextIcon fontSize="large" />
+            </IconButton>
 
             {modifyLoading && (
             <CircularProgress
