@@ -8,7 +8,7 @@ const LabeledTextarea = ({ label, labelBoldness=500, value, onChange, placeholde
 
   return (
     <Box sx={{ width: '100%', mb: 2 }}>
-      <Typography variant="subtitle1" sx={{fontSize:18, fontWeight: labelBoldness, mb: 1 }}>
+      <Typography variant="subtitle1" sx={{fontWeight: labelBoldness, mb: 1 }}>
         {label}
       </Typography>
 
@@ -20,7 +20,6 @@ const LabeledTextarea = ({ label, labelBoldness=500, value, onChange, placeholde
         style={{
           width: '100%',
           padding: '12px',
-          fontSize: '18px',
           borderRadius: '8px',
           border: `2px solid ${theme.palette.divider}`,
           fontFamily: 'inherit',
