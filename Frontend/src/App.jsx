@@ -49,7 +49,14 @@ function App() {
         palette: { mode },
         typography:{
           fontSize:12,
+        },
+        components:{
+        MuiFormControl: {
+          defaultProps: {
+            size: 'small',
+          },
         }
+      },
       }),
     [mode]
   )
@@ -182,17 +189,30 @@ function App() {
       </Box>
 
       <Box 
-      sx={{
-        resize: "both",
-        overflow: "auto",
-      }}>
-        <Box sx={{ py: 3, borderRadius: 2 }}>
+        sx={{
+          resize: "both",
+          overflow: "auto",
+        }}>
+        <Box sx={{ 
+          position: 'fixed',
+          top: 0, 
+          left: 0, 
+          width: '100%', 
+          zIndex: 1000, 
+          backgroundColor: theme.palette.background.default, 
+          py: 3, 
+          borderRadius: 2
+        }}>
           <Typography 
             variant='h2' 
             component="h1" 
             textAlign='center' 
             color="textPrimary"
-            sx={{ fontWeight: 'bold', fontFamily: 'serif' }}>
+            sx={{ 
+              fontWeight: 'bold', 
+              fontFamily: 'serif',
+              fontSize: { xs: '1.8rem', sm: '2.7rem', md: '3rem' },
+              }}>
             Smart Email Reply Generator
           </Typography>
           <Typography variant='subtitle1' textAlign='center' color="textSecondary">
@@ -200,7 +220,12 @@ function App() {
           </Typography>
         </Box>
 
-        <Container sx={{width:'780px'}}>
+        <Box sx={{ maxWidth: "720px", px: 2, mx: "auto" , mt: {
+            xs: 12,   // small screens
+            sm: 14,  // small to medium
+            md: 15,  // medium and up
+            lg: 16   // large screens and up
+          }}}>
           <Box sx={{ width: '100%' }}>
             <Tabs
               value={tabIndex}
@@ -218,14 +243,14 @@ function App() {
             {tabIndex === "one" && (
             <Card 
               sx={{
-                boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.1)', 
+                boxShadow: '0px 0px 24px rgba(0, 0, 0, 0.1)', 
                 borderRadius: '20px',
                 padding: 3, 
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0px 12px 32px rgba(0, 0, 0, 0.2)',
-                }
+                // transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                // '&:hover': {
+                //   transform: 'translateY(-5px)',
+                //   boxShadow: '0px 12px 32px rgba(0, 0, 0, 0.2)',
+                // }
               }}>
 
               <LabeledTextarea
@@ -284,7 +309,7 @@ function App() {
                   </FormControl>
                 </Box>
 
-                <TextField sx={{my:2}}
+                <TextField size='small' sx={{my:2}}
                   label="Preferred Keywords"
                   variant="outlined"
                   fullWidth
@@ -293,7 +318,7 @@ function App() {
                   helperText="Separate keywords by commas"
                 />
 
-                <Box sx={{display:'flex', gap:3}}>
+                <Box sx={{display:'flex', gap:5}}>
                   <Box sx={{flex:1.5, ml:1}}>
                     <Typography variant="subtitle2" >
                       Length
@@ -341,7 +366,7 @@ function App() {
                 onClick={handleSubmit}
                 disabled={!emailContent || loading}
                 fullWidth
-                sx={{height:'45px', borderRadius:3, mt:2}}>
+                sx={{height:'42px', borderRadius:3, mt:2}}>
                 {loading ? <CircularProgress size={24}/> : "Generate Reply"}
               </Button>
               
@@ -359,11 +384,11 @@ function App() {
                 boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.1)', // soft shadow
                 borderRadius: '20px', // rounded corners
                 padding: 3, // spacing inside
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-5px)', // slight lift on hover
-                  boxShadow: '0px 12px 32px rgba(0, 0, 0, 0.2)', // stronger shadow
-                }
+                // transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                // '&:hover': {
+                //   transform: 'translateY(-5px)', // slight lift on hover
+                //   boxShadow: '0px 12px 32px rgba(0, 0, 0, 0.2)', // stronger shadow
+                // }
               }}>
 
               <Typography variant="subtitle1" sx={{fontSize:18, fontWeight: 600,mb:2}}>
@@ -454,7 +479,7 @@ function App() {
             </Card>
             )}
           </Box>  
-        </Container>
+        </Box>
       </Box>
     
     </ThemeProvider>
