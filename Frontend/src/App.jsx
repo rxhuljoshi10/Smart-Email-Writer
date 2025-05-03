@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Container from '@mui/material/Container';
-import { Box, Button,CircularProgress, FormControl, InputLabel, MenuItem, Select, TextareaAutosize, TextField, Typography } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, DialogContent,DialogActions,CircularProgress, FormControl, InputLabel, MenuItem, Select, TextareaAutosize, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import Slider from '@mui/material/Slider';
 import Card from '@mui/material/Card';
@@ -11,15 +11,21 @@ import { useMemo } from 'react'
 import { createTheme, ThemeProvider, CssBaseline, IconButton, InputAdornment} from '@mui/material'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { Brightness4, Brightness7 } from '@mui/icons-material'
+import { AlignVerticalCenter, Brightness4, Brightness7 } from '@mui/icons-material'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-
+import DynamicSelect from './components/DynamicSelect.jsx';
 
 function App() {
   const [emailContent, setEmailContent] = useState("");
   const [tone, setTone] = useState("");
-  const [replyLength, setReplyLength] = useState(0);
   const [intent, setIntent] = useState("");
+  const [format, setFormat] = useState("");
+  const [language, setLanguge] = useState("English")
+  const [toneOptions, setToneOptions] = useState(['Professional', 'Casual', 'Friendly']);
+  const [intentOptions, setIntentOptions] = useState(['Confirming', 'Declining', 'Agreeing', "Clarification", "Give Update"]);
+  const [formatOptions, setFormatOptions] = useState(['Paragraph', 'Bullet Points', 'Email Format']);
+  const [langOptions, setLangOptions] = useState(['English', 'Hindi', 'Marathi']);
+  const [replyLength, setReplyLength] = useState(0);
   const [generatedReply, setGeneratedReply] = useState("");
   const [generatedSubject, setGeneratedSubject] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,10 +35,8 @@ function App() {
   const [replyHistory, setReplyHistory] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [customKeywords, setCustomKeywords] = useState("");
-  const [format, setFormat] = useState("");
   const [tabIndex, setTabIndex] = useState('one');
   const [mode, setMode] = useState('light')
-  const [language, setLanguge] = useState("english")
 
 
   const MAX = 15;
@@ -171,7 +175,7 @@ function App() {
     }
   };
 
-  
+
   return (
     <ThemeProvider theme={theme}>
     <CssBaseline />
@@ -220,12 +224,17 @@ function App() {
           </Typography>
         </Box>
 
-        <Box sx={{ maxWidth: "720px", px: 2, mx: "auto" , mt: {
-            xs: 12,   // small screens
-            sm: 14,  // small to medium
-            md: 15,  // medium and up
-            lg: 16   // large screens and up
+        <Box 
+          sx={{ maxWidth: "720px", 
+            px: 2, mx: "auto" , 
+            mt: {
+              xs: 13,   // small screens
+              sm: 14,  // small to medium
+              md: 15,  // medium and up
+              lg: 16   // large screens and up
           }}}>
+
+          {/* Tabs */}
           <Box sx={{ width: '100%' }}>
             <Tabs
               value={tabIndex}
@@ -239,6 +248,7 @@ function App() {
             </Tabs>
           </Box>
 
+          {/* Main Box */}
           <Box sx={{my:1}}>
             {tabIndex === "one" && (
             <Card 
@@ -265,48 +275,32 @@ function App() {
                 Optional Fields : 
               </Typography>
               
+              {/* Optional Fields */}
               <Box sx={{my:1, p:2,  border: '1px solid grey' , borderRadius: '12px'}}>
                 <Box sx={{ display: 'flex', gap: 2}}>
-                  <FormControl sx={{flex:1}}>
-                    <InputLabel>Tone</InputLabel>
-                    <Select
-                      value={tone || ''}
-                      label={"Tone"}
-                      onChange={(e) => setTone(e.target.value)}>
-                        <MenuItem value="">None</MenuItem>
-                        <MenuItem value="professional">Professional</MenuItem>
-                        <MenuItem value="casual">Casual</MenuItem>
-                        <MenuItem value="friendly">Friendly</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <DynamicSelect 
+                    label="Tone"
+                    options={toneOptions}
+                    value={tone}
+                    onChange={(e) => setTone(e.target.value)}
+                    onOptionsChange={setToneOptions}
+                  />
 
-                  <FormControl sx={{ flex:1}}>
-                    <InputLabel>Intent</InputLabel>
-                    <Select
-                      value={intent || ''}
-                      label={"Intent"}
-                      onChange={(e) => setIntent(e.target.value)}>
-                        <MenuItem value="">None</MenuItem>
-                        <MenuItem value="confirm">Confirming</MenuItem>
-                        <MenuItem value="decline">Declining</MenuItem>
-                        <MenuItem value="agree">Agreeing</MenuItem>
-                        <MenuItem value="clarification">Asking for Clarification</MenuItem>
-                        <MenuItem value="update">Giving an Update</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <DynamicSelect
+                    label="Intent"
+                    options={intentOptions}
+                    value={intent}
+                    onChange={(e) => setIntent(e.target.value)}
+                    onOptionsChange={setIntentOptions}
+                  />
 
-                  <FormControl sx={{ flex:1}}>
-                    <InputLabel>Format</InputLabel>
-                    <Select
-                      value={format || ''}
-                      label={"Format"}
-                      onChange={(e) => setFormat(e.target.value)}>
-                        <MenuItem value="">None</MenuItem>
-                        <MenuItem value="paragraph">Paragraph</MenuItem>
-                        <MenuItem value="bullets">Bullet Points</MenuItem>
-                        <MenuItem value="template">Full Email Template</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <DynamicSelect
+                    label="Format"
+                    options={formatOptions}
+                    value={format}
+                    onChange={(e) => setFormat(e.target.value)}
+                    onOptionsChange={setFormatOptions}
+                  />
                 </Box>
 
                 <TextField size='small' sx={{my:2}}
@@ -347,17 +341,13 @@ function App() {
                     </Box>
                   </Box>
                 
-                  <FormControl sx={{mt: 2, marginLeft: 'auto', flex:1}}>
-                    <InputLabel>Language</InputLabel>
-                    <Select
-                      value={language}
-                      label={"Language"}
-                      onChange={(e) => setLanguge(e.target.value)}>
-                        <MenuItem value="english">English</MenuItem>
-                        <MenuItem value="hindi">Hindi</MenuItem>
-                        <MenuItem value="marathi">Marathi</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <DynamicSelect 
+                    label="Language"
+                    options={langOptions}
+                    value={language}
+                    onChange={(e) => setLanguge(e.target.value)}
+                    onOptionsChange={setLangOptions}
+                  />
                 </Box>
               </Box>
           
