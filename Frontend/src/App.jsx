@@ -312,7 +312,7 @@ function App() {
                   helperText="Separate keywords by commas"
                 />
 
-                <Box sx={{display:'flex', gap:5}}>
+                <Box sx={{display:'flex', gap:5, alignItems:'center'}}>
                   <Box sx={{flex:1.5, ml:1}}>
                     <Typography variant="subtitle2" >
                       Length

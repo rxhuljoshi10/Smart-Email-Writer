@@ -8,6 +8,15 @@ public class EmailRequest {
     private String intent;
     private String format;
     private String customKeywords;
+    private String language;
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 
     public String getCustomKeywords() {
         return customKeywords;

@@ -69,16 +69,14 @@ public class EmailGeneratorService {
 
     private String buildPrompt(EmailRequest emailRequest) {
         StringBuilder prompt = new StringBuilder();
-//        String emailLength = emailRequest.getLength();
-//        if(emailLength != null && !emailLength.isEmpty()){
-//            emailLength = "in "+emailLength;
-//        }
-        prompt.append("Reply to following email query without any subject line or explanation.");
+
+        prompt.append("Reply to following email query with a subject and no extra explanation");
         prompt.append("Here's some reply specification, ignore if empty");
         prompt.append("\nTone : ").append(emailRequest.getTone());
         prompt.append("\nIntent : ").append(emailRequest.getIntent());
         prompt.append("\nLines : ").append(emailRequest.getLength());
         prompt.append("\nFormat : ").append(emailRequest.getFormat());
+        prompt.append("\nLanguage : ").append(emailRequest.getLanguage());
         prompt.append("\nCustom Keywords : ").append(emailRequest.getCustomKeywords());
         prompt.append("\nOriginal email : ").append(emailRequest.getEmailContent());
 
@@ -86,8 +84,9 @@ public class EmailGeneratorService {
     }
 
     public String modifyReply(ModifyEmailRequest modifyEmailRequest) {
-        String prompt = modifyEmailRequest.getModification() + " the following email reply. Return only the reply without subject or any extra text. Keep the tone same : \n'" +
-                modifyEmailRequest.getGeneratedReply();
+        String prompt = "Perform the specified action on following email without changing meaning. Return without any extra text or explanation\n" +
+        "Action : " + modifyEmailRequest.getModification() + "\n" +
+        "Email Reply : " + modifyEmailRequest.getGeneratedReply();
         return getAiResponse(prompt);
     }
 }
