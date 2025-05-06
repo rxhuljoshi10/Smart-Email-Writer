@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import Container from '@mui/material/Container';
-import { Box, Button, Dialog, DialogTitle, DialogContent,DialogActions,CircularProgress, FormControl, InputLabel, MenuItem, Select, TextareaAutosize, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import Slider from '@mui/material/Slider';
 import Card from '@mui/material/Card';
@@ -8,14 +7,16 @@ import LabeledTextarea from './components/LabeledTextArea.jsx';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useMemo } from 'react'
-import { createTheme, ThemeProvider, CssBaseline, IconButton, InputAdornment} from '@mui/material'
+import { createTheme, ThemeProvider, CssBaseline, IconButton} from '@mui/material'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { AlignVerticalCenter, Brightness4, Brightness7 } from '@mui/icons-material'
+import { Brightness4, Brightness7 } from '@mui/icons-material'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DynamicSelect from './components/DynamicSelect.jsx';
 
 function App() {
+  const base_url = import.meta.env.VITE_BASE_URL;
+
   const [emailContent, setEmailContent] = useState("");
   const [tone, setTone] = useState("");
   const [intent, setIntent] = useState("");
@@ -90,7 +91,7 @@ function App() {
   
   const handleSubject = () => {
     handleRequest({
-      url: "http://localhost:8081/api/email/generate",
+      url: `${base_url}/api/email/generate`,
       payload: {
         emailContent,
         tone,
@@ -108,7 +109,7 @@ function App() {
     setCurrentIndex(0);
     
     const response = await handleRequest({
-      url: "http://localhost:8081/api/email/generate",
+      url: `${base_url}/api/email/generate`,
       payload: {
         emailContent,
         tone,
@@ -137,7 +138,7 @@ function App() {
   
   const handleModification = async (modificationType) => {
     const response = await handleRequest({
-      url: "http://localhost:8081/api/email/modify-generated-reply",
+      url: `${base_url}/api/email/modify-generated-reply`,
       payload: {
         generatedReply,
         modification: modificationType,
