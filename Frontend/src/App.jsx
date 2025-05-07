@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Button, CircularProgress, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import Slider from '@mui/material/Slider';
@@ -22,9 +22,19 @@ function App() {
   const [intent, setIntent] = useState("");
   const [format, setFormat] = useState("");
   const [language, setLanguge] = useState("English")
-  const [toneOptions, setToneOptions] = useState(['Professional', 'Casual', 'Friendly']);
-  const [intentOptions, setIntentOptions] = useState(['Confirming', 'Declining', 'Agreeing', "Clarification", "Give Update"]);
-  const [formatOptions, setFormatOptions] = useState(['Paragraph', 'Bullet Points', 'Email Format']);
+  const [toneOptions, setToneOptions] = useState(() => {
+    const savedToneOptions = JSON.parse(localStorage.getItem('savedToneOptions'));
+    return savedToneOptions || ['Professional', 'Casual', 'Friendly']
+  });
+  const [intentOptions, setIntentOptions] = useState(() => {
+    const savedIntentOptions = JSON.parse(localStorage.getItem('savedIntentOptions'));
+    return savedIntentOptions || ['Confirming', 'Declining', 'Agreeing', "Clarification", "Give Update"]
+  });
+  const [formatOptions, setFormatOptions] = useState(() => {
+    const savedFormatOptions = JSON.parse(localStorage.getItem('savedFormatOptions'));
+    return savedFormatOptions || ['Paragraph', 'Bullet Points', 'Email Format']
+  });
+
   const [langOptions, setLangOptions] = useState(['English', 'Hindi', 'Marathi']);
   const [replyLength, setReplyLength] = useState(0);
   const [generatedReply, setGeneratedReply] = useState("");
@@ -37,8 +47,33 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [customKeywords, setCustomKeywords] = useState("");
   const [tabIndex, setTabIndex] = useState('one');
-  const [mode, setMode] = useState('light')
+  const [mode, setMode] = useState(() => {
+    const savedMode = localStorage.getItem('mode');
+    return savedMode ? savedMode : 'light';
+  });
 
+  useEffect(() => {
+    const savedMode = localStorage.getItem('mode');
+    if (savedMode) {
+      setMode(savedMode);
+    } 
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('mode', mode); 
+  }, [mode]);
+
+  useEffect(() => {
+    localStorage.setItem('savedToneOptions', JSON.stringify(toneOptions));
+  }, [toneOptions])
+  
+  useEffect(() => {
+    localStorage.setItem('savedIntentOptions', JSON.stringify(intentOptions));
+  }, [intentOptions])
+
+  useEffect(() => {
+    localStorage.setItem('savedFormatOptions', JSON.stringify(formatOptions));
+  }, [formatOptions])
 
   const MAX = 15;
   const MIN = 0;
@@ -49,26 +84,28 @@ function App() {
 
 
   const theme = useMemo(
-    () =>
+    () => 
       createTheme({
-        palette: { mode },
-        typography:{
-          fontSize:12,
+        palette: {
+          mode: mode || 'light',
         },
-        components:{
-        MuiFormControl: {
-          defaultProps: {
-            size: 'small',
+        typography: {
+          fontSize: 12,
+        },
+        components: {
+          MuiFormControl: {
+            defaultProps: {
+              size: 'small',
+            },
           },
-        }
-      },
+        },
       }),
     [mode]
-  )
+  );
 
   const toggleDarkMode = () => {
-    setMode(prev => (prev === 'light' ? 'dark' : 'light'))
-  }
+    setMode((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
@@ -198,15 +235,19 @@ function App() {
           resize: "both",
           overflow: "auto",
         }}>
+
+        {/* Header  */}
         <Box sx={{ 
           position: 'fixed',
           top: 0, 
           left: 0, 
           width: '100%', 
           zIndex: 1000, 
-          backgroundColor: theme.palette.background.default, 
+          backgroundColor: theme.palette.background.paper,
           py: 3, 
-          borderRadius: 2
+          borderRadius: 2,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          borderBottom: `1px solid ${theme.palette.divider}`
         }}>
           <Typography 
             variant='h2' 
@@ -372,9 +413,9 @@ function App() {
             {tabIndex === "two" &&(
             <Card 
               sx={{
-                boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.1)', // soft shadow
-                borderRadius: '20px', // rounded corners
-                padding: 3, // spacing inside
+                boxShadow: '0px 0px 24px rgba(0, 0, 0, 0.1)', 
+                borderRadius: '20px',
+                padding: 3, 
                 // transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 // '&:hover': {
                 //   transform: 'translateY(-5px)', // slight lift on hover
