@@ -1,6 +1,7 @@
 package com.email.writer.Controller;
 
 import com.email.writer.Entity.EmailRequest;
+import com.email.writer.Entity.EmailRequestForExtension;
 import com.email.writer.Entity.ModifyEmailRequest;
 import com.email.writer.Service.EmailGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,12 @@ public class EmailGeneratorController {
     public ResponseEntity<String> generateEmail(@RequestBody EmailRequest emailRequest){
         String response = emailGeneratorService.generateEmailReply(emailRequest);
 //        String response = "Working!";
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/generate-for-extension")
+    public ResponseEntity<String> generateEmailForExtension(@RequestBody EmailRequestForExtension emailRequestForExtension){
+        String response = emailGeneratorService.generateEmailReplyForExtension(emailRequestForExtension);
         return ResponseEntity.ok(response);
     }
 

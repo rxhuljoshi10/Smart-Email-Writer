@@ -58,14 +58,17 @@ function injectButton(){
             button.disabled = true;
 
             const emailContent = getEmailContent();
-            const response = await fetch('http://localhost:8081/api/email/generate', {
+            
+            const url = 'https://smart-email-writer-production.up.railway.app/api/email/generate-for-extension'
+            // const url = 'http://localhost:8081/api/email/generate-for-extension'
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     emailContent: emailContent,
-                    tone: "professinal"
+                    tone: "Professional"
                 })  
             });
 

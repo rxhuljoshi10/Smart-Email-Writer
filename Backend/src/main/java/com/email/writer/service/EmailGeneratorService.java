@@ -1,6 +1,7 @@
 package com.email.writer.Service;
 
 import com.email.writer.Entity.EmailRequest;
+import com.email.writer.Entity.EmailRequestForExtension;
 import com.email.writer.Entity.ModifyEmailRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,5 +89,13 @@ public class EmailGeneratorService {
         "Action : " + modifyEmailRequest.getModification() + "\n" +
         "Email Reply : " + modifyEmailRequest.getGeneratedReply();
         return getAiResponse(prompt);
+    }
+
+    public String generateEmailReplyForExtension(EmailRequestForExtension request) {
+        String prompt = "Reply to following email query without any subject or extra explanation\n" +
+                "Email Content : " + request.getEmailContent()+
+                "Tone : "+request.getTone();
+        return getAiResponse(prompt);
+
     }
 }
